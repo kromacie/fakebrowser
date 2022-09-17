@@ -72,7 +72,7 @@ export class PptrToolkit {
 
     static async stopLoading(page: Page) {
         try {
-            await page['_client'].send('Page.stopLoading')
+            await page['_client']().send('Page.stopLoading')
         } catch (ex: any) {
         }
 
@@ -165,25 +165,15 @@ export class PptrToolkit {
         const start = new Date().getTime()
 
         while (new Date().getTime() - start < timeout) {
-            const pages = await Promise.all(
-                browser.targets()
-                  .filter((target) => target.type() === 'page')
-                  .map((target) => target.page())
-            );
-            const arr = []
-
-            for (const p of pages) {
-                if (p) {
-                    if (await p.evaluate(() => {
+            const pages = (await browser.pages())
+                .filter(async page => {
+                    return await page.evaluate(() => {
                         return document.visibilityState == 'visible'
-                    })) {
-                        arr.push(p)
-                    }
-                }
-            }
+                    })
+                })
 
-            if (arr.length == 1) {
-                return arr[0]
+            if (pages.length == 1) {
+                return pages[0]
             }
         }
 
