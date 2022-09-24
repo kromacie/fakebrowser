@@ -227,9 +227,15 @@ export class BrowserLauncher {
 
             // If the port listens to errors, determine if the heartbeat interface is successful
             try {
-                this._httpServer.listen(FakeBrowser.globalConfig.internalHttpServerPort)
+                this._httpServer.listen(FakeBrowser.internalHttpServerPort ?? 0)
+
+                const address = this._httpServer.address()
+
+                if (address && typeof address == 'object' && 'port' in address) {
+                    FakeBrowser.setInternalHttpServerPort(address.port)
+                }
             } catch (ex: any) {
-                const hbUrl = `http://127.0.0.1:${FakeBrowser.globalConfig.internalHttpServerPort}/hb`
+                const hbUrl = `http://127.0.0.1:${FakeBrowser.getInternalHttpServerPort()}/hb`
                 try {
                     const hbData = (await axios.get(hbUrl)).data
                     if (hbData === kInternalHttpServerHeartbeatMagic) {

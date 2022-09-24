@@ -1,8 +1,8 @@
-const {FakeBrowser} = require('fakebrowser');
+const {FakeBrowser} = require('fakebrowser-dev');
 
 !(async () => {
     // Change internal httpserver port number
-    FakeBrowser.globalConfig.internalHttpServerPort = 17312
+    FakeBrowser.setInternalHttpServerPort(17312)
 
     const builder = new FakeBrowser.Builder()
         .displayUserActionLayer(true)

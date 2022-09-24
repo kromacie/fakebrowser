@@ -32,7 +32,7 @@ export class PptrPatcher {
 
         const opts: PptrExtraEvasionOpts = {
             browserUUID: browserUUID,
-            internalHttpServerPort: FakeBrowser.globalConfig.internalHttpServerPort,
+            internalHttpServerPort: FakeBrowser.getInternalHttpServerPort(),
             fakeDD: params.fakeDeviceDesc,
             proxyExportIP: params.proxy && params.proxy.exportIP,
             myRealExportIP: await helper.myRealExportIP(),

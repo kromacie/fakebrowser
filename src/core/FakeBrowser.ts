@@ -19,7 +19,6 @@ export const kDefaultWindowsDD = require(path.resolve(__dirname, '../../device-h
 
 const kBrowserMaxSurvivalTime = 60 * 1000 * 15
 const kDefaultReferers = ['https://www.google.com', 'https://www.bing.com']
-const kInternalHttpServerPort = 17311
 
 // chromium startup parameters
 // https://peter.sh/experiments/chromium-command-line-switches/
@@ -134,10 +133,29 @@ export const kDefaultLaunchArgs = [
 export class FakeBrowser {
     static Builder = BrowserBuilder
 
+    static internalHttpServerPort?: number|null = null
+
+    static setInternalHttpServerPort(port: number): void
+    {
+        if (this.internalHttpServerPort) {
+            throw new Error("Internal http server cannot be changed after it's been already set!")
+        }
+
+        this.internalHttpServerPort = port
+    }
+
+    static getInternalHttpServerPort(): number
+    {
+        if (!this.internalHttpServerPort) {
+            throw new Error("Internal http server port has not been set")
+        }
+
+        return this.internalHttpServerPort
+    }
+
     static readonly globalConfig = {
         defaultBrowserMaxSurvivalTime: kBrowserMaxSurvivalTime,
         defaultReferers: kDefaultReferers,
-        internalHttpServerPort: kInternalHttpServerPort,
         defaultLaunchArgs: kDefaultLaunchArgs,
     }
 

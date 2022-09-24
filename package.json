@@ -1,6 +1,6 @@
 {
-  "name": "fakebrowser",
-  "version": "0.0.66",
+  "name": "fakebrowser-dev",
+  "version": "0.0.67-dev",
   "description": "🤖 Fake fingerprints to bypass anti-bot systems. Simulate mouse and keyboard operations to make behavior like a real person.",
   "repository": {
     "type": "git",
@@ -66,6 +66,7 @@
     "cpy-cli": "^3.1.1",
     "cross-env": "^7.0.3",
     "jest": "^27.3.1",
+    "mkdirp": "^1.0.4",
     "puppeteer": "^14.4.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
