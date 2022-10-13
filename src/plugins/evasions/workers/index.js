@@ -5,6 +5,7 @@
 const {PuppeteerExtraPlugin} = require('puppeteer-extra-plugin');
 
 const withUtils = require('../_utils/withUtils');
+const url = require("url");
 
 class Plugin extends PuppeteerExtraPlugin {
     constructor(opts = {}) {
@@ -32,9 +33,17 @@ class Plugin extends PuppeteerExtraPlugin {
 
             utils.replaceWithProxy(utils.cache.global, 'Worker', {
                 construct: function (target, args) {
+                    function getWorkerURL( url ) {
+                        const content = `
+                        importScripts( ["${ url }"] );
+                        `;
+                        return URL.createObjectURL( new Blob( [ content ], { type: "text/javascript" } ) );
+                    }
+
                     // console.log(`worker is registered in the browser, ${args[0]}`);
                     const relUrl = window.location.href;
                     const workerUrl = args[0].toString();
+                    console.log(this)
 
                     // fix: The worker's relative path is relative to the current page path.
                     // reference: https://github.com/shehua/Alice/blob/master/w3c/html5-web-workers.md
@@ -55,12 +64,17 @@ class Plugin extends PuppeteerExtraPlugin {
                             break;
                         }
 
-                        args[0] = `http://127.0.0.1:${internalHttpServerPort}/patchWorker?type=worker&uuid=${browserUUID}&relUrl=${encodeURIComponent(relUrl)}&workerUrl=${encodeURIComponent(workerUrl)}`;
+                        // We are bypassing restriction, that cross-origin scripts won't work when requested by worker. Therefore, let's execute it as a blob.
+                        args[0] = getWorkerURL(`http://127.0.0.1:${internalHttpServerPort}/patchWorker?type=worker&uuid=${browserUUID}&relUrl=${encodeURIComponent(relUrl)}&workerUrl=${encodeURIComponent(workerUrl)}`);
 
                         break;
                     }
 
-                    return new workerConstructor.value(...args);
+                    console.log(args)
+
+                    // URL.revokeObjectURL( args[0] );
+
+                    return new workerConstructor.value(...args)
                 },
             });
         }

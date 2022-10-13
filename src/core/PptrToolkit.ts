@@ -172,8 +172,8 @@ export class PptrToolkit {
                     })
                 })
 
-            if (pages.length == 1) {
-                return pages[0]
+            if (pages.length > 0) {
+                return pages[pages.length - 1]
             }
         }
 

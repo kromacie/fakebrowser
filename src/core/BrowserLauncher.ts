@@ -2,17 +2,17 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as URLToolkit from 'url-toolkit'
 import * as http from 'http'
-import {IncomingMessage, ServerResponse} from 'http'
+import { IncomingMessage, ServerResponse } from 'http'
 import * as url from 'url'
 
 import axios from 'axios'
-import {Agent} from 'https'
-import {strict as assert} from 'assert'
+import { Agent } from 'https'
+import { strict as assert } from 'assert'
 
-import Driver, {ConnectParameters, DriverParameters, LaunchParameters, VanillaLaunchOptions} from './Driver.js'
-import DeviceDescriptorHelper, {FakeDeviceDescriptor} from './DeviceDescriptor.js'
-import {PptrPatcher} from './PptrPatcher'
-import {FakeBrowser} from './FakeBrowser'
+import Driver, { ConnectParameters, DriverParameters, LaunchParameters, VanillaLaunchOptions } from './Driver.js'
+import DeviceDescriptorHelper, { FakeDeviceDescriptor } from './DeviceDescriptor.js'
+import { FakeBrowser } from './FakeBrowser'
+import { PptrPatcher } from "./PptrPatcher";
 
 const kFakeDDFileName = '__fakebrowser_fakeDD.json'
 const kInternalHttpServerHeartbeatMagic = '__fakebrowser__&88ff22--'
@@ -109,22 +109,20 @@ export class BrowserLauncher {
         )
 
         const launchTime = new Date().getTime()
-        const fb = new FakeBrowser(
+        // pages 0 cannot be hook, lets drop it
+        // await fb._patchPages0Bug()
+
+        return new FakeBrowser(
             params,
             vanillaBrowser,
             pptrExtra,
             launchTime,
             uuid,
         )
-
-        // pages 0 cannot be hook, lets drop it
-        await fb._patchPages0Bug()
-
-        return fb
     }
 
     static async launch(params: LaunchParameters): Promise<FakeBrowser> {
-        this.bootBrowserSurvivalChecker()
+        // this.bootBrowserSurvivalChecker()
         await this.bootInternalHTTPServer()
 
         // deviceDesc, userDataDir cannot be empty
@@ -132,8 +130,10 @@ export class BrowserLauncher {
 
         this.prepareFakeDeviceDesc(params)
         assert(params.fakeDeviceDesc)
+        // const uuid = DeviceDescriptorHelper.deviceUUID(params.fakeDeviceDesc)
 
-        const uuid = DeviceDescriptorHelper.deviceUUID(params.fakeDeviceDesc)
+        const uuid = new Date().getTime().toString()
+
         const {
             vanillaBrowser,
             pptrExtra,
@@ -153,7 +153,7 @@ export class BrowserLauncher {
         )
 
         // pages 0 cannot be hook, lets drop it
-        await fb._patchPages0Bug()
+        // await fb._patchPages0Bug()
 
         // Manage surviving browsers and kill them if they time out
         this._fakeBrowserInstances.push(fb)
@@ -168,6 +168,8 @@ export class BrowserLauncher {
             this._httpServer.on('request', async (req: IncomingMessage, res: ServerResponse) => {
                 assert(req.url)
                 const {query, pathname} = url.parse(req.url, true)
+
+                console.log(query, pathname)
 
                 if (pathname === '/hb') {
                     res.write(kInternalHttpServerHeartbeatMagic)
@@ -227,7 +229,7 @@ export class BrowserLauncher {
 
             // If the port listens to errors, determine if the heartbeat interface is successful
             try {
-                this._httpServer.listen(FakeBrowser.internalHttpServerPort ?? 0)
+                this._httpServer.listen(0)
 
                 const address = this._httpServer.address()
 
@@ -235,6 +237,7 @@ export class BrowserLauncher {
                     FakeBrowser.setInternalHttpServerPort(address.port)
                 }
             } catch (ex: any) {
+                console.log(ex)
                 const hbUrl = `http://127.0.0.1:${FakeBrowser.getInternalHttpServerPort()}/hb`
                 try {
                     const hbData = (await axios.get(hbUrl)).data
@@ -255,6 +258,7 @@ export class BrowserLauncher {
         }
     }
 
+    // @ts-ignore
     private static bootBrowserSurvivalChecker() {
         if (!this._checkerIntervalId) {
             this._checkerIntervalId = setInterval(async () => {

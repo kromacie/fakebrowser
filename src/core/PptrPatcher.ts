@@ -86,15 +86,16 @@ export class PptrPatcher {
      * Package evasions to js string for worker to use
      * @param browser
      * @param jsContent
+     * @param additionalPlugins
      */
-    static async patchWorkerJsContent(browser: FakeBrowser, jsContent: string) {
-        const jsPatch = await this.evasionsCode(browser)
+    static async patchWorkerJsContent(browser: FakeBrowser, jsContent: string, additionalPlugins: Array<PuppeteerExtraPlugin> = []) {
+        const jsPatch = await this.evasionsCode(browser, additionalPlugins)
         jsContent = jsPatch + jsContent
 
         return jsContent
     }
 
-    static async evasionsCode(browser: FakeBrowser) {
+    static async evasionsCode(browser: FakeBrowser, additionalPlugins: Array<PuppeteerExtraPlugin> = []) {
         let jsPatch = ''
         const utils = require('../plugins/evasions/_utils')
 
@@ -109,9 +110,9 @@ export class PptrPatcher {
         utilsContent += `utils.init(); \n`
 
         // code from puppeteer-extra
-        const plugins: PuppeteerExtraPlugin[] = browser.pptrExtra.plugins
+        const plugins: PuppeteerExtraPlugin[] = [...browser.pptrExtra.plugins]
         const runLast = plugins
-            .filter(p => p.requirements.has('runLast'))
+            .filter(p => p.requirements && p.requirements.has('runLast'))
             .map(p => p.name)
 
         for (const name of runLast) {

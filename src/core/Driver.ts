@@ -257,6 +257,7 @@ export default class Driver {
         }
     }
 
+    // @ts-ignore
     private static async getPids(pid: string | number): Promise<number[]> {
         if ('string' === typeof (pid)) {
             pid = parseInt(pid)
@@ -282,26 +283,30 @@ export default class Driver {
                 await page.close()
             }
         } catch (ignored) {
+            console.log('error closing page', ignored)
         }
 
-        const browserProcess = browser.process()
-        if (browserProcess) {
-            const pid = browserProcess.pid
-
-            if (pid) {
-                const pids = await this.getPids(pid)
-                pids.forEach(pid => {
-                    try {
-                        process.kill(pid, 'SIGKILL')
-                    } catch (ignored) {
-                    }
-                })
-            }
-        }
+        // Disabled temporarly
+        // const browserProcess = browser.process()
+        // if (browserProcess) {
+        //     const pid = browserProcess.pid
+        //
+        //     if (pid) {
+        //         const pids = await this.getPids(pid)
+        //         pids.forEach(pid => {
+        //             try {
+        //                 process.kill(pid, 'SIGTERM')
+        //             } catch (ignored) {
+        //                 console.log('error during sending signal', ignored)
+        //             }
+        //         })
+        //     }
+        // }
 
         try {
             await browser.close()
         } catch (ignored) {
+            console.log('error during sending signal', ignored)
         }
     }
 }

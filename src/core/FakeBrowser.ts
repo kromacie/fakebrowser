@@ -133,14 +133,10 @@ export const kDefaultLaunchArgs = [
 export class FakeBrowser {
     static Builder = BrowserBuilder
 
-    static internalHttpServerPort?: number|null = null
+    private static internalHttpServerPort?: number|null = null
 
     static setInternalHttpServerPort(port: number): void
     {
-        if (this.internalHttpServerPort) {
-            throw new Error("Internal http server cannot be changed after it's been already set!")
-        }
-
         this.internalHttpServerPort = port
     }
 
